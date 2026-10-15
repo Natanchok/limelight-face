@@ -1,0 +1,9 @@
+data/
+models/*.onnx
+.venv/
+venv/
+__pycache__/
+.vscode/
+*.db
+*.pem
+.env
