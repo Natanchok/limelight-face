@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parent.parent
 MODELS = ROOT / "models"
 FACES_DIR = ROOT / "data" / "known_faces"
 
-CAMERA_INDEX = 3
+CAMERA_INDEX = 1
 
 # Cosine similarity threshold; tune with real test images.
 RECOGNITION_THRESHOLD = 0.363
