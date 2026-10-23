@@ -1,40 +1,32 @@
+import cv2
 
-import time
-import requests
+# Use index 1 based on diagnostic output
+cap = cv2.VideoCapture(1)
 
-# Change this if your Limelight has a different IP address.
-LIMELIGHT_IP = "172.29.0.1"
+# Initialize AprilTag 36h11 detector
+dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_APRILTAG_36h11)
+parameters = cv2.aruco.DetectorParameters()
+detector = cv2.aruco.ArucoDetector(dictionary, parameters)
 
-RESULTS_URL = f"http://{LIMELIGHT_IP}:5801/results"
+print("Starting video feed from camera 1... Press 'q' to exit.")
 
-def get_apriltag_ids() -> list[int]:
-    """Return the IDs of all currently detected AprilTags."""
-    try:
-        response = requests.get(RESULTS_URL, timeout=2)
-        response.raise_for_status()
-        data = response.json()
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        print("Failed to grab frame from index 1.")
+        break
 
-        ids = []
-        for tag in data.get("Results", {}).get("Fiducial", []):
-            tag_id = tag.get("fID")
-            if tag_id is not None:
-                ids.append(int(tag_id))
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    corners, ids, _ = detector.detectMarkers(gray)
 
-        return ids
+    if ids is not None:
+        cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+        for tag_id in ids.flatten():
+            print(f"Detected AprilTag ID: {tag_id}")
 
-    except (requests.RequestException, ValueError) as error:
-        print(f"Limelight connection or data error: {error}")
-        return []
+    cv2.imshow("AprilTag Detector", frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
-
-if __name__ == "__main__":
-    previous_ids = None
-
-    while True:
-        ids = get_apriltag_ids()
-
-        if ids != previous_ids:
-            print("Detected AprilTag IDs:", ids)
-            previous_ids = ids
-
-        time.sleep(0.1)
+cap.release()
+cv2.destroyAllWindows()
