@@ -1,4 +1,4 @@
-# Limelight Face Recognition Project
+# Webcam Face Recognition Project
 
 Python computer-vision project for a webcam-based access-control demo.
 
