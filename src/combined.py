@@ -115,7 +115,10 @@ try:
             print("Could not read camera frame.")
             break
 
-        # Keep a clean copy for AprilTag processing.
+        # Mirror the frame horizontally so it acts like a mirror
+        frame = cv2.flip(frame, 1)
+
+        # Keep a clean copy for AprilTag and Face processing.
         raw_frame = frame.copy()
 
         # Track state for the current frame
