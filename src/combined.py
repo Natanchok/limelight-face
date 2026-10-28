@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import time
 import cv2
@@ -13,6 +12,8 @@ CAMERA_INDEX = 1
 RECOGNITION_THRESHOLD = 0.363
 REAPPEAR_SECONDS = 2.0
 UNKNOWN_COOLDOWN = 3.0
+
+BOTH_ARE_GOOD = False
 
 GREEN = (0, 220, 0)
 RED = (0, 0, 255)
@@ -115,8 +116,11 @@ try:
             break
 
         # Keep a clean copy for AprilTag processing.
-        # The displayed frame will receive both sets of annotations.
         raw_frame = frame.copy()
+
+        # Track state for the current frame
+        recognized_face_detected_in_frame = False
+        tag_detected_in_frame = False
 
         # ================ FACE RECOGNITION ================
 
@@ -156,6 +160,7 @@ try:
                 ):
                     label = f"{best_name} ({best_score:.2f})"
                     color = GREEN
+                    recognized_face_detected_in_frame = True
 
                     if (
                         best_name not in last_reported
@@ -171,7 +176,7 @@ try:
                     last_seen[best_name] = now
 
                 else:
-                    label = "The System does not recognize this person"
+                    label = "NOT IN SYSTEM"
                     color = RED
                     unknown_visible = True
 
@@ -208,6 +213,7 @@ try:
             cv2.aruco.drawDetectedMarkers(
                 frame, corners, ids
             )
+            tag_detected_in_frame = True
 
             for tag_id in ids.flatten():
                 tag_id = int(tag_id)
@@ -218,6 +224,17 @@ try:
                     print(f"[APRILTAG] Detected ID: {tag_id}")
 
         previous_tag_ids = current_tag_ids
+
+        # ================ EVALUATE BOTH_ARE_GOOD ================
+
+        BOTH_ARE_GOOD = recognized_face_detected_in_frame and tag_detected_in_frame
+
+        # Optional on-screen status indicator for BOTH_ARE_GOOD
+        status_color = GREEN if BOTH_ARE_GOOD else RED
+        cv2.putText(
+            frame, f"BOTH_ARE_GOOD: {BOTH_ARE_GOOD}", (10, 65),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.7, status_color, 2, cv2.LINE_AA
+        )
 
         # ================ DISPLAY ================
 
