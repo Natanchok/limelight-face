@@ -1,7 +1,7 @@
 import socket
 
 # Use "127.0.0.1" for local testing, or the server's LAN IP address
-HOST = "0.0.0.0"
+HOST = "10.4.1.44"
 PORT = 5000
 
 

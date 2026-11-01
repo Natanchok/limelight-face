@@ -2,13 +2,30 @@ from pathlib import Path
 import time
 import cv2
 
+def get_working_camera_index(max_tested=5):
+    """Finds the first available camera index that returns a valid frame."""
+    for index in range(max_tested):
+        # Using cv2.CAP_V4L2 as in your original code (Linux standard)
+        # If moving to Windows/Mac, change to just cv2.VideoCapture(index)
+        cap = cv2.VideoCapture(index, cv2.CAP_V4L2) 
+        
+        if cap.isOpened():
+            # Verify we can actually read a frame (some virtual cameras open but return nothing)
+            ok, _ = cap.read()
+            cap.release()
+            if ok:
+                print(f"[SYSTEM] Found working camera at index {index}")
+                return index
+                
+    raise RuntimeError("No working cameras found on this device.")
+
 # ---------------- CONFIG ----------------
 
 ROOT = Path(__file__).resolve().parent.parent
 MODELS = ROOT / "models"
 FACES_DIR = ROOT / "data" / "known_faces"
 
-CAMERA_INDEX = 1
+CAMERA_INDEX = get_working_camera_index()
 RECOGNITION_THRESHOLD = 0.363
 REAPPEAR_SECONDS = 2.0
 UNKNOWN_COOLDOWN = 3.0
