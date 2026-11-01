@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 
-HOST = "0.0.0.0"
+HOST = "192.168.1.84"
 PORT = 5000
 COMBINED_SCRIPT = Path(__file__).resolve().with_name("combined.py")
 
