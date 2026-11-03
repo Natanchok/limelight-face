@@ -1,8 +1,8 @@
-#!/home/nate/limelight-face/.venv/bin/python
-# -*- coding: utf-8 -*-
-import re
+#!/bin/sh
+'''exec' "/home/Natik/Documents/VS Code Projects/limelight-face/.venv/bin/python" "$0" "$@"
+' '''
 import sys
 from numpy._configtool import main
 if __name__ == '__main__':
-    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
     sys.exit(main())

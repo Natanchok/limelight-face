@@ -38,7 +38,7 @@ ROOT = Path(__file__).resolve().parent.parent
 MODELS = ROOT / "models"
 FACES_DIR = ROOT / "data" / "known_faces"
 
-CAMERA_INDEX = get_working_camera_index()  # Automatically find a working camera index
+CAMERA_INDEX = get_working_camera_index()
 RECOGNITION_THRESHOLD = 0.363
 REAPPEAR_SECONDS = 2.0
 UNKNOWN_COOLDOWN = 3.0
