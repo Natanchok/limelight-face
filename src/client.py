@@ -1,26 +1,26 @@
 import socket
+import subprocess
+import sys
+from pathlib import Path
 
-# Use "127.0.0.1" for local testing, or the server's LAN IP address
-HOST = "10.4.1.44"
+HOST = "0.0.0.0" # Must match the server's IP
 PORT = 5000
-
+COMBINED_SCRIPT = Path(__file__).resolve().with_name("combined.py")
 
 def main():
-    print(f"Connecting to trigger server at {HOST}:{PORT}...")
-
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-            client.connect((HOST, PORT))
-            print("Connected successfully! Server should now trigger combined.py.")
-
-            # Optional: Keep the connection open for a moment if needed, 
-            # or let the `with` block close it immediately.
-            
-    except ConnectionRefusedError:
-        print("Error: Connection refused. Ensure the server is running and the IP/port are correct.")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+        client.connect((HOST, PORT))
+        print("Connected to server. Waiting for commands...")
+        
+        # Receive data from the server
+        data = client.recv(1024)
+        
+        if data == b"EXECUTE_COMBINED":
+            print(f"Command received. Running {COMBINED_SCRIPT.name} locally...")
+            subprocess.Popen(
+                [sys.executable, str(COMBINED_SCRIPT)],
+                cwd=str(COMBINED_SCRIPT.parent),
+            )
 
 if __name__ == "__main__":
     main()

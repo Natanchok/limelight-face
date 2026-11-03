@@ -1,23 +1,36 @@
 from pathlib import Path
 import time
 import cv2
+import tkinter as tk
+import numpy as np
 
-def get_working_camera_index(max_tested=5):
-    """Finds the first available camera index that returns a valid frame."""
+def get_working_camera_index(max_tested=10):
+    """Finds the first available camera index that returns a valid, non-blank frame."""
     for index in range(max_tested):
-        # Using cv2.CAP_V4L2 as in your original code (Linux standard)
-        # If moving to Windows/Mac, change to just cv2.VideoCapture(index)
         cap = cv2.VideoCapture(index, cv2.CAP_V4L2) 
         
         if cap.isOpened():
-            # Verify we can actually read a frame (some virtual cameras open but return nothing)
-            ok, _ = cap.read()
+            valid_camera = False
+            # Read up to 10 frames to allow the real camera sensor to "wake up"
+            for _ in range(10):
+                ok, frame = cap.read()
+                if ok and frame is not None:
+                    # If the image is completely black, the standard deviation is 0.
+                    # A real webcam image will almost always have a std > 10.
+                    if frame.std() > 5.0:
+                        valid_camera = True
+                        break
+                time.sleep(0.05)
+            
             cap.release()
-            if ok:
-                print(f"[SYSTEM] Found working camera at index {index}")
+            
+            if valid_camera:
+                print(f"[SYSTEM] Found working camera with actual video at index {index}")
                 return index
+            else:
+                print(f"[SYSTEM] Camera index {index} opened but returned a blank/black screen. Skipping...")
                 
-    raise RuntimeError("No working cameras found on this device.")
+    raise RuntimeError("No working, non-blank cameras found on this device.")
 
 # ---------------- CONFIG ----------------
 
@@ -110,7 +123,7 @@ tag_detector = cv2.aruco.ArucoDetector(
 
 print("AprilTag detector ready: DICT_APRILTAG_36h11")
 
-# ---------------- CAMERA ----------------
+# ---------------- CAMERA & WINDOW SETUP ----------------
 
 camera = cv2.VideoCapture(CAMERA_INDEX, cv2.CAP_V4L2)
 
@@ -118,6 +131,25 @@ if not camera.isOpened():
     raise RuntimeError(f"Cannot open camera index {CAMERA_INDEX}")
 
 print("Camera started. Press Q to quit.\n")
+
+# Get screen resolution using tkinter to calculate center coordinates
+root = tk.Tk()
+root.withdraw() # Hide the main tkinter window
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+
+# Get camera frame resolution
+cam_width = int(camera.get(cv2.CAP_PROP_FRAME_WIDTH))
+cam_height = int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+# Calculate center position
+x = (screen_width - cam_width) // 2
+y = (screen_height - cam_height) // 2
+
+# Create and position the window
+window_name = "Face Recognition + AprilTag Detection"
+cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
+cv2.moveWindow(window_name, x, y)
 
 last_seen = {}
 last_reported = {}
@@ -150,7 +182,7 @@ try:
 
         if faces is not None:
             for face in faces:
-                x, y, w, h = map(int, face[:4])
+                x_box, y_box, w_box, h_box = map(int, face[:4])
 
                 aligned = face_recognizer.alignCrop(
                     raw_frame, face
@@ -198,10 +230,10 @@ try:
                     unknown_visible = True
 
                 cv2.rectangle(
-                    frame, (x, y), (x + w, y + h), color, 2
+                    frame, (x_box, y_box), (x_box + w_box, y_box + h_box), color, 2
                 )
                 cv2.putText(
-                    frame, label, (x, max(y - 10, 25)),
+                    frame, label, (x_box, max(y_box - 10, 25)),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2,
                     cv2.LINE_AA
                 )
@@ -255,7 +287,7 @@ try:
 
         # ================ DISPLAY ================
 
-        cv2.imshow("Face Recognition + AprilTag Detection", frame)
+        cv2.imshow(window_name, frame)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
