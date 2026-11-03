@@ -3,7 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-HOST = "0.0.0.0" # Must match the server's IP
+HOST = "192.168.11.33" # Must match the server's IP
 PORT = 5000
 COMBINED_SCRIPT = Path(__file__).resolve().with_name("combined.py")
 
