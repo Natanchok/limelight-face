@@ -4,6 +4,12 @@ import cv2
 import tkinter as tk
 import numpy as np
 
+if tuple(int(part) for part in cv2.__version__.split(".")[:2]) < (4, 8):
+    raise RuntimeError(
+        f"OpenCV 4.8 or newer is required; found {cv2.__version__}. "
+        "Run this project with its virtual environment."
+    )
+
 def get_working_camera_index(max_tested=10):
     """Finds the first available camera index that returns a valid, non-blank frame."""
     for index in range(max_tested):
