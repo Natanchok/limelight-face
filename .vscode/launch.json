@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run face recognition",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/combined.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "DISPLAY": ":0"
+      }
+    }
+  ]
+}
