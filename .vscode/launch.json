@@ -2,10 +2,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run face recognition",
+      "name": "Connect client and run combined",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/src/combined.py",
+      "program": "${workspaceFolder}/src/client.py",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "justMyCode": true,

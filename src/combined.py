@@ -10,33 +10,33 @@ if tuple(int(part) for part in cv2.__version__.split(".")[:2]) < (4, 8):
         "Run this project with its virtual environment."
     )
 
-def get_working_camera_index(max_tested=10):
-    """Finds the first available camera index that returns a valid, non-blank frame."""
+def get_working_camera_index(max_tested=10, startup_timeout=5.0):
+    """Find the first camera that returns a frame, including a dark frame."""
     for index in range(max_tested):
         cap = cv2.VideoCapture(index, cv2.CAP_V4L2) 
         
         if cap.isOpened():
             valid_camera = False
-            # Read up to 10 frames to allow the real camera sensor to "wake up"
-            for _ in range(10):
+            deadline = time.monotonic() + startup_timeout
+            while time.monotonic() < deadline:
                 ok, frame = cap.read()
                 if ok and frame is not None:
-                    # If the image is completely black, the standard deviation is 0.
-                    # A real webcam image will almost always have a std > 10.
-                    if frame.std() > 5.0:
-                        valid_camera = True
-                        break
+                    valid_camera = True
+                    break
                 time.sleep(0.05)
             
             cap.release()
             
             if valid_camera:
-                print(f"[SYSTEM] Found working camera with actual video at index {index}")
+                print(f"[SYSTEM] Found camera returning frames at index {index}")
                 return index
             else:
-                print(f"[SYSTEM] Camera index {index} opened but returned a blank/black screen. Skipping...")
+                print(
+                    f"[SYSTEM] Camera index {index} returned no frames "
+                    f"within {startup_timeout:g} seconds. Skipping..."
+                )
                 
-    raise RuntimeError("No working, non-blank cameras found on this device.")
+    raise RuntimeError("No camera returned a frame.")
 
 # ---------------- CONFIG ----------------
 
