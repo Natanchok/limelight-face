@@ -10,15 +10,16 @@ from protocol import request
 
 # --- Configuration & Paths ---
 BASE_DIR = Path(__file__).parent.resolve()
+ROOT = BASE_DIR.parent
 COMBINED_SCRIPT = BASE_DIR / "combined.py"
 
-HOST = os.environ.get("LIMELIGHT_HOST", "127.0.0.1")
-PORT = int(os.environ.get("LIMELIGHT_PORT", "5000"))
+HOST = os.environ.get("VERITAG_HOST", "127.0.0.1")
+PORT = int(os.environ.get("VERITAG_PORT", "5000"))
 
 if sys.platform == "win32":
-    VENV_PYTHON = BASE_DIR / ".venv" / "Scripts" / "python.exe"
+    VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
 else:
-    VENV_PYTHON = BASE_DIR / ".venv" / "bin" / "python"
+    VENV_PYTHON = ROOT / ".venv" / "bin" / "python"
 
 ALLOWED_PHOTO_SUFFIXES = {".jpg", ".jpeg", ".png"}
 
@@ -152,7 +153,7 @@ def launch_script(status_var):
 
 def main():
     root = tk.Tk()
-    root.title("Limelight Face")
+    root.title("VeriTag Face")
     root.configure(bg=BG)
 
     # Arch / tiling WM fix: float instead of tiling.
@@ -206,7 +207,7 @@ def main():
 
     # ---------------- Welcome screen ----------------
     welcome = make_screen()
-    build_header(welcome, "Limelight Face")
+    build_header(welcome, "VeriTag Face")
     tk.Label(
         welcome,
         text="Welcome. Secure webcam access control for your space.",

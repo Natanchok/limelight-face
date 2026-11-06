@@ -73,8 +73,8 @@ REAPPEAR_SECONDS = 2.0
 UNKNOWN_COOLDOWN = 3.0
 VERIFY_INTERVAL = 2.0
 
-HOST = os.environ.get("LIMELIGHT_HOST", "127.0.0.1")
-PORT = int(os.environ.get("LIMELIGHT_PORT", "5000"))
+HOST = os.environ.get("VERITAG_HOST", "127.0.0.1")
+PORT = int(os.environ.get("VERITAG_PORT", "5000"))
 
 GREEN = (0, 220, 0)
 RED = (0, 0, 255)

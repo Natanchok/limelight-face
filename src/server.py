@@ -14,7 +14,7 @@ PORT = 5000
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
-DB_PATH = DATA_DIR / "limelight.db"
+DB_PATH = DATA_DIR / "veritag.db"
 PHOTO_DIR = DATA_DIR / "known_faces"
 MODELS_DIR = ROOT / "models"
 ALLOWED_SUFFIXES = {".jpg", ".jpeg", ".png"}

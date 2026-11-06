@@ -2,7 +2,19 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Connect client and run combined",
+      "name": "VeriTag Server",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/server.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "DISPLAY": ":0"
+      }
+    },
+    {
+      "name": "VeriTag Client",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/src/client.py",
@@ -12,6 +24,13 @@
       "env": {
         "DISPLAY": ":0"
       }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run VeriTag (Server + Client)",
+      "configurations": ["VeriTag Server", "VeriTag Client"],
+      "stopAll": true
     }
   ]
 }
