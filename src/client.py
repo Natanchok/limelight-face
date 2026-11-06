@@ -1,31 +1,43 @@
-import socket
+import os
 import subprocess
 import sys
 from pathlib import Path
 
-HOST = "192.168.1.247"  # Must match the server's IP
-PORT = 5000
-COMBINED_SCRIPT = Path(__file__).resolve().with_name("combined.py")
-ROOT = COMBINED_SCRIPT.parent.parent
+from protocol import request
+
+HOST = os.environ.get("LIMELIGHT_HOST", "127.0.0.1")  # Must match the server's IP
+PORT = int(os.environ.get("LIMELIGHT_PORT", "5000"))
+INTERFACE_SCRIPT = Path(__file__).resolve().with_name("interface.py")
+ROOT = INTERFACE_SCRIPT.parent.parent
 VENV_PYTHON = ROOT / ".venv" / "bin" / "python"
 
+
 def main():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-        client.connect((HOST, PORT))
-        print("Connected to server. Waiting for commands...")
-        
-        # Receive data from the server
-        data = client.recv(1024)
-        
-        if data == b"EXECUTE_COMBINED":
-            print(f"Command received. Running {COMBINED_SCRIPT.name} locally...")
-            subprocess.Popen(
-                [
-                    str(VENV_PYTHON) if VENV_PYTHON.is_file() else sys.executable,
-                    str(COMBINED_SCRIPT),
-                ],
-                cwd=str(COMBINED_SCRIPT.parent),
-            )
+    try:
+        response = request(HOST, PORT, {"action": "hello", "role": "launcher"})
+    except Exception as exc:
+        print(f"Could not reach server at {HOST}:{PORT}: {exc}")
+        return
+
+    if response.get("command") != "open_interface":
+        print(f"Unexpected server response: {response}")
+        return
+
+    print(f"Command received. Opening {INTERFACE_SCRIPT.name} locally...")
+
+    env = os.environ.copy()
+    env["LIMELIGHT_HOST"] = HOST
+    env["LIMELIGHT_PORT"] = str(PORT)
+
+    subprocess.Popen(
+        [
+            str(VENV_PYTHON) if VENV_PYTHON.is_file() else sys.executable,
+            str(INTERFACE_SCRIPT),
+        ],
+        cwd=str(INTERFACE_SCRIPT.parent),
+        env=env,
+    )
+
 
 if __name__ == "__main__":
     main()
