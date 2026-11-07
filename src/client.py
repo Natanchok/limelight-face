@@ -10,7 +10,10 @@ HOST = os.environ.get("VERITAG_HOST", "127.0.0.1")  # Must match the server's IP
 PORT = int(os.environ.get("VERITAG_PORT", "5000"))
 INTERFACE_SCRIPT = Path(__file__).resolve().with_name("interface.py")
 ROOT = INTERFACE_SCRIPT.parent.parent
-VENV_PYTHON = ROOT / ".venv" / "bin" / "python"
+if sys.platform == "win32":
+    VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
+else:
+    VENV_PYTHON = ROOT / ".venv" / "bin" / "python"
 
 
 def connect_with_retry(timeout=15.0):
