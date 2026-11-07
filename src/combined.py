@@ -380,7 +380,15 @@ try:
 finally:
     camera.release()
     cv2.destroyAllWindows()
+    # Let HighGUI actually process the destroy event before opening the next
+    # Tk window, otherwise a stray camera window can linger on some WMs.
+    cv2.waitKey(1)
     print("Camera closed.")
 
 if success_name:
     show_success_window(success_name)
+    # Tell the launcher that login succeeded so it can close down completely.
+    sys.exit(0)
+
+# Camera was closed without a successful login: let the launcher reopen.
+sys.exit(1)

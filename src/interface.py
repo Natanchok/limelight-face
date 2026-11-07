@@ -138,17 +138,17 @@ class RoundedButton(tk.Canvas):
 def launch_script(status_var):
     python_exe = str(VENV_PYTHON) if VENV_PYTHON.is_file() else sys.executable
     try:
-        subprocess.Popen(
+        process = subprocess.Popen(
             [python_exe, str(COMBINED_SCRIPT)],
             cwd=str(COMBINED_SCRIPT.parent),
         )
         status_var.set("Running combined.py")
         print(f"Launched {COMBINED_SCRIPT.name} successfully.")
-        return True
+        return process
     except Exception as e:
         status_var.set("Failed to launch combined.py")
         print(f"Error launching script: {e}")
-        return False
+        return None
 
 
 def main():
@@ -241,6 +241,24 @@ def main():
                            font=(mono_font, 10), bg=CARD, fg=MUTED)
     menu_status.pack(anchor="w", pady=(18, 0))
 
+    def watch_combined(process):
+        """Wait for combined.py to exit, then close or restore the launcher."""
+        if process.poll() is None:
+            root.after(150, watch_combined, process)
+            return
+
+        if process.returncode == 0:
+            # Successful login: quit the whole app so no stray launcher window
+            # is left behind (Hyprland used to float it into the top-left).
+            root.destroy()
+            return
+
+        # Cancelled or failed: bring the launcher back in fullscreen.
+        root.deiconify()
+        root.attributes("-fullscreen", True)
+        menu_status.configure(fg=MUTED)
+        menu_status_var.set("Recognition cancelled.")
+
     def handle_login():
         try:
             response = request(HOST, PORT, {"action": "get_users"}, timeout=5)
@@ -254,8 +272,15 @@ def main():
             menu_status_var.set("No registered users. Register a face first.")
             return
 
-        ok = launch_script(menu_status_var)
-        menu_status.configure(fg=SUCCESS if ok else ACCENT)
+        process = launch_script(menu_status_var)
+        if process is None:
+            menu_status.configure(fg=ACCENT)
+            return
+
+        # Hide the launcher while the camera/success window is on screen.
+        menu_status.configure(fg=SUCCESS)
+        root.withdraw()
+        watch_combined(process)
 
     menu_actions = tk.Frame(menu, bg=CARD)
     menu_actions.pack(side="bottom")
